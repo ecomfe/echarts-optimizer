@@ -1,165 +1,162 @@
 
+var fs = require('fs');
 var path = require('path');
+var conf = require('./conf');
 
-var modules = {
-    main: {name: 'echarts/echarts'},
-    parts: [
-        {name: 'echarts/chart/line', weight: 100},
-        {name: 'echarts/chart/bar', weight: 100},
-        {name: 'echarts/chart/scatter', weight: 90},
-        {name: 'echarts/chart/k', weight: 30},
-        {name: 'echarts/chart/pie', weight: 90},
-        {name: 'echarts/chart/radar', weight: 30},
-        {name: 'echarts/chart/chord', weight: 30},
-        {name: 'echarts/chart/force', weight: 30},
-        {
-            name: 'echarts/chart/map',
-            weight: 90,
-            includeShallow: [
-                'echarts/util/mapData/geoJson/an_hui_geo',
-                'echarts/util/mapData/geoJson/ao_men_geo',
-                'echarts/util/mapData/geoJson/bei_jing_geo',
-                'echarts/util/mapData/geoJson/china_geo',
-                'echarts/util/mapData/geoJson/chong_qing_geo',
-                'echarts/util/mapData/geoJson/fu_jian_geo',
-                'echarts/util/mapData/geoJson/gan_su_geo',
-                'echarts/util/mapData/geoJson/guang_dong_geo',
-                'echarts/util/mapData/geoJson/guang_xi_geo',
-                'echarts/util/mapData/geoJson/gui_zhou_geo',
-                'echarts/util/mapData/geoJson/hai_nan_geo',
-                'echarts/util/mapData/geoJson/hei_long_jiang_geo',
-                'echarts/util/mapData/geoJson/he_bei_geo',
-                'echarts/util/mapData/geoJson/he_nan_geo',
-                'echarts/util/mapData/geoJson/hu_bei_geo',
-                'echarts/util/mapData/geoJson/hu_nan_geo',
-                'echarts/util/mapData/geoJson/jiang_su_geo',
-                'echarts/util/mapData/geoJson/jiang_xi_geo',
-                'echarts/util/mapData/geoJson/ji_lin_geo',
-                'echarts/util/mapData/geoJson/liao_ning_geo',
-                'echarts/util/mapData/geoJson/nei_meng_gu_geo',
-                'echarts/util/mapData/geoJson/ning_xia_geo',
-                'echarts/util/mapData/geoJson/qing_hai_geo',
-                'echarts/util/mapData/geoJson/shang_hai_geo',
-                'echarts/util/mapData/geoJson/shan_dong_geo',
-                'echarts/util/mapData/geoJson/shan_xi_1_geo',
-                'echarts/util/mapData/geoJson/shan_xi_2_geo',
-                'echarts/util/mapData/geoJson/si_chuan_geo',
-                'echarts/util/mapData/geoJson/tai_wan_geo',
-                'echarts/util/mapData/geoJson/tian_jin_geo',
-                'echarts/util/mapData/geoJson/world_geo',
-                'echarts/util/mapData/geoJson/xiang_gang_geo',
-                'echarts/util/mapData/geoJson/xin_jiang_geo',
-                'echarts/util/mapData/geoJson/xi_zang_geo',
-                'echarts/util/mapData/geoJson/yun_nan_geo',
-                'echarts/util/mapData/geoJson/zhe_jiang_geo'
-            ]
-        },
-        {name: 'echarts/chart/gauge', weight: 30},
-        {name: 'echarts/chart/funnel', weight: 30},
-        {name: 'echarts/chart/eventRiver', weight: 10}
-    ]
-};
+function readResourceFile(fileName) {
+    return fs.readFileSync(
+        path.join(__dirname, 'resource', fileName),
+        'UTF-8'
+    );
+}
+var eslCode = readResourceFile('esl.js');
+var wrapStart = readResourceFile('all-start.js');
+var wrapNut = readResourceFile('all-nut.js');
+var wrapEnd = readResourceFile('all-end.js');
+
+var modules = conf.modules;
 
 var HIGH_WEIGHT = 100;
-
-var BUILTIN_MODULES = {require: 1, module: 1, exports: 1};
-
-var packages = [
-    {
-        name: 'echarts',
-        location: path.resolve(__dirname, '../echarts/src'),
-        main: 'echarts'
-    },
-    {
-        name: 'zrender',
-        location: path.resolve(__dirname, '../zrender/src'),
-        main: 'zrender'
-    }
-];
+var BUILTIN_MODULES = ['require', 'module', 'exports'];
 
 var amd = require('./lib/amd');
-amd.config({
-    baseUrl: process.cwd(),
-    packages: packages
-});
+amd.config(conf.amd);
+
 var analyse = require('./lib/analyse');
 
-var outputDir = process.argv[2] || 'dist';
-var fs = require('fs');
-function writeFile(file, content) {
-    if (outputDir) {
-        var filePath = path.join(outputDir, file);
-        require('mkdirp').sync(path.dirname(filePath));
-        fs.writeFileSync(filePath, content, 'UTF-8');
+var distDir = path.join(process.cwd(), 'dist');
+exports.setDistDir = function (dir) {
+    if (dir) {
+        distDir = dir;
     }
+};
+
+function writeFile(file, content) {
+    var filePath = path.join(distDir, file);
+    require('mkdirp').sync(path.dirname(filePath));
+    fs.writeFileSync(filePath, content, 'UTF-8');
 }
 
-var main = modules.main;
-main.dependencies = analyse(main.name, 1);
-writeFile('analyses/echarts.dependencies', main.dependencies.join('\n'));
-modules.parts.forEach(function (mod) {
-    mod.dependencies = analyse(mod.name, 1);
-    writeFile(
-        'analyses/' + mod.name.split('/').join('.') + '.dependencies',
-        mod.dependencies.join('\n')
-    );
-});
 
-var extraMainDependencies;
-modules.parts.forEach(function (mod) {
-    if (mod.weight >= HIGH_WEIGHT) {
-        if (!extraMainDependencies) {
-            extraMainDependencies = mod.dependencies;
+exports.analyse = function () {
+    var main = modules.main;
+
+    // analyse dependencies
+    main.dependencies = subtract(analyse(main.name, 1), BUILTIN_MODULES);
+    writeFile('analyses/echarts.dependencies', main.dependencies.join('\n'));
+    modules.parts.forEach(function (mod) {
+        mod.dependencies = subtract(analyse(mod.name, 1), BUILTIN_MODULES);
+        writeFile(
+            'analyses/' + mod.name.split('/').join('.') + '.dependencies',
+            mod.dependencies.join('\n')
+        );
+    });
+
+    // analyse extra dependencies of main module
+    var extraMainDependencies;
+    modules.parts.forEach(function (mod) {
+        if (mod.weight >= HIGH_WEIGHT) {
+            if (!extraMainDependencies) {
+                extraMainDependencies = mod.dependencies;
+            }
+            else {
+                extraMainDependencies = intersect(extraMainDependencies, mod.dependencies);
+            }
         }
-        else {
-            extraMainDependencies = intersect(extraMainDependencies, mod.dependencies);
+    });
+
+    // analyse expect dependencies for all modules
+    main.expectDependencies = union(main.dependencies, extraMainDependencies);
+    writeFile('analyses/echarts.dependencies.expect', main.expectDependencies.join('\n'));
+    modules.parts.forEach(function (mod) {
+        mod.expectDependencies = subtract(mod.dependencies, main.expectDependencies);
+
+        if (mod.includeShallow) {
+            Array.prototype.push.apply(mod.expectDependencies, mod.includeShallow);
         }
-    }
-});
+        writeFile(
+            'analyses/' + mod.name.split('/').join('.') + '.dependencies.expect',
+            mod.expectDependencies.join('\n')
+        );
+    });
+};
 
 
-main.expectDependencies = union(main.dependencies, extraMainDependencies);
-writeFile('analyses/echarts.dependencies.expect', main.expectDependencies.join('\n'));
-modules.parts.forEach(function (mod) {
-    mod.expectDependencies = subtract(mod.dependencies, main.expectDependencies);
+exports.packAsDemand = function () {
+    var main = modules.main;
 
-    if (mod.includeShallow) {
-        Array.prototype.push.apply(mod.expectDependencies, mod.includeShallow);
-    }
-    writeFile(
-        'analyses/' + mod.name.split('/').join('.') + '.dependencies.expect',
-        mod.expectDependencies.join('\n')
-    );
-});
-
-writeCompiledCode(
-    'echarts.js', main.name, main.expectDependencies,
-    fs.readFileSync(path.join(__dirname, 'asset/esl.js'), 'UTF-8')
-);
-modules.parts.forEach(function (mod) {
+    // write built source
     writeCompiledCode(
-        mod.name.slice(mod.name.indexOf('/') + 1) + '.js',
-        mod.name,
-        mod.expectDependencies
+        'echarts.source.js', main.name, main.expectDependencies,
+        eslCode
     );
-});
+    modules.parts.forEach(function (mod) {
+        writeCompiledCode(
+            mod.name.slice(mod.name.indexOf('/') + 1) + '.source.js',
+            mod.name,
+            mod.expectDependencies
+        );
+    });
+};
+
+exports.packAsAll = function () {
+    var main = modules.main;
+
+    // calc modules list
+    var mods = [main.name];
+    mods = union(mods, main.expectDependencies);
+    modules.parts.forEach(function (mod) {
+        mods = union(mods, [mod.name]);
+        mods = union(mods, mod.expectDependencies);
+    });
+
+    // combine built code
+    var result = ''
+    mods.forEach(function (mod) {
+        result += analyse.getAnalysed(mod).builtCode;
+    });
+    console.log(mods)
+
+    // write file by wrapped code
+    var code = wrapStart + wrapNut + result + wrapEnd;
+    writeFile(
+        'echarts-all.source.js', code
+    );
+    writeFile(
+        'echarts-all.js',
+        jsCompress(code)
+    );
+};
+
+function jsCompress(source) {
+    var UglifyJS = require('uglify-js');
+    var ast = UglifyJS.parse(source);
+    /* jshint camelcase: false */
+    // compressor needs figure_out_scope too
+    ast.figure_out_scope();
+    ast = ast.transform(UglifyJS.Compressor( {} ));
+
+    // need to figure out scope again so mangler works optimally
+    ast.figure_out_scope();
+    ast.compute_char_frequency();
+    ast.mangle_names();
+
+    return ast.print_to_string();
+}
 
 function writeCompiledCode(file, moduleId, expectDependencies, beforeContent) {
     var result = beforeContent || '';
-    result += analyse.getAnalysed(moduleId).bulitCode;
+    result += analyse.getAnalysed(moduleId).builtCode;
 
     expectDependencies.forEach(function (dep) {
-        if (BUILTIN_MODULES[dep]) {
-            return;
-        }
-
         var depInfo = analyse.getAnalysed(dep);
         if (depInfo) {
-            result += depInfo.bulitCode;
+            result += depInfo.builtCode;
         }
     });
 
     writeFile(file, result);
+    writeFile(file.replace('.source', ''), jsCompress(result));
 }
 
 /**
