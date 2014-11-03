@@ -1,0 +1,11 @@
+#! /usr/bin/env node
+
+
+var path = require('path');
+var distDir = process.argv[2] || path.join(process.cwd(), 'dist');
+
+var index = require('../index');
+index.setDistDir(distDir);
+index.analyse();
+index.packAsAll();
+index.packAsDemand();
