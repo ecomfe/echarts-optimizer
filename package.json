@@ -1,8 +1,9 @@
 {
     "name": "echarts-optimizer",
-    "version": "0.2.1",
+    "version": "0.2.2",
     "description": "",
     "dependencies": {
+        "commander": "~2.3.0",
         "esprima": "~1.2.2",
         "estraverse": "~1.7.0",
         "escodegen": "~1.4.1",
