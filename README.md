@@ -14,7 +14,13 @@ $ [sudo] npm install -g echarts-optimizer
 $ echarts-optimize
 ```
 
-也可以通过如下方式指定生成目录：
+添加 `--debug` 参数时，生成目录下会包含依赖分析结果。
+
+```
+$ echarts-optimize --debug
+```
+
+通过如下方式可以指定生成目录：
 
 ```
 $ echarts-optimize echarts-dist
