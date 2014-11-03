@@ -1,7 +1,8 @@
 
 var fs = require('fs');
 var path = require('path');
-var conf = require('./conf');
+var conf;
+var modules;
 
 function readResourceFile(fileName) {
     return fs.readFileSync(
@@ -14,15 +15,17 @@ var wrapStart = readResourceFile('all-start.js');
 var wrapNut = readResourceFile('all-nut.js');
 var wrapEnd = readResourceFile('all-end.js');
 
-var modules = conf.modules;
-
 var HIGH_WEIGHT = 100;
 var BUILTIN_MODULES = ['require', 'module', 'exports'];
 
 var amd = require('./lib/amd');
-amd.config(conf.amd);
-
 var analyse = require('./lib/analyse');
+
+exports.setConf = function (customConf) {
+    conf = customConf || require('./conf');
+    modules = conf.modules;
+    amd.config(conf.amd);
+};
 
 var distDir = path.join(process.cwd(), 'dist');
 exports.setDistDir = function (dir) {
@@ -38,15 +41,15 @@ function writeFile(file, content) {
 }
 
 
-exports.analyse = function () {
+exports.analyse = function (debug) {
     var main = modules.main;
 
     // analyse dependencies
     main.dependencies = subtract(analyse(main.name, 1), BUILTIN_MODULES);
-    writeFile('analyses/echarts.dependencies', main.dependencies.join('\n'));
+    debug && writeFile('analyses/echarts.dependencies', main.dependencies.join('\n'));
     modules.parts.forEach(function (mod) {
         mod.dependencies = subtract(analyse(mod.name, 1), BUILTIN_MODULES);
-        writeFile(
+        debug && writeFile(
             'analyses/' + mod.name.split('/').join('.') + '.dependencies',
             mod.dependencies.join('\n')
         );
@@ -67,14 +70,14 @@ exports.analyse = function () {
 
     // analyse expect dependencies for all modules
     main.expectDependencies = union(main.dependencies, extraMainDependencies);
-    writeFile('analyses/echarts.dependencies.expect', main.expectDependencies.join('\n'));
+    debug && writeFile('analyses/echarts.dependencies.expect', main.expectDependencies.join('\n'));
     modules.parts.forEach(function (mod) {
         mod.expectDependencies = subtract(mod.dependencies, main.expectDependencies);
 
         if (mod.includeShallow) {
             Array.prototype.push.apply(mod.expectDependencies, mod.includeShallow);
         }
-        writeFile(
+        debug && writeFile(
             'analyses/' + mod.name.split('/').join('.') + '.dependencies.expect',
             mod.expectDependencies.join('\n')
         );
@@ -115,7 +118,6 @@ exports.packAsAll = function () {
     mods.forEach(function (mod) {
         result += analyse.getAnalysed(mod).builtCode;
     });
-    console.log(mods)
 
     // write file by wrapped code
     var code = wrapStart + wrapNut + result + wrapEnd;

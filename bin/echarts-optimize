@@ -1,11 +1,28 @@
 #! /usr/bin/env node
 
+// parse args
+var program = require('commander');
+program
+    .usage('<dist-directory> [--debug]')
+    .option('--debug', 'Output dependencies analyse result to dist dir.')
+    .parse(process.argv);
 
-var path = require('path');
-var distDir = process.argv[2] || path.join(process.cwd(), 'dist');
-
+var fs = require('fs');
 var index = require('../index');
-index.setDistDir(distDir);
-index.analyse();
+
+var confFile = require('path').join(
+    process.cwd(),
+    'echarts-optimize-conf.js'
+);
+
+if (fs.existsSync(confFile)) {
+    index.setConf(require(confFile));
+}
+else {
+    index.setConf();
+}
+
+index.setDistDir(program.args[0]);
+index.analyse(program.debug);
 index.packAsAll();
 index.packAsDemand();

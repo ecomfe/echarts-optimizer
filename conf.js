@@ -57,18 +57,17 @@ exports.modules = {
     ]
 };
 
-var path = require('path');
 exports.amd = {
     baseUrl: process.cwd(),
     packages: [
         {
             name: 'echarts',
-            location: path.resolve(__dirname, '../echarts/src'),
+            location: 'echarts/src',
             main: 'echarts'
         },
         {
             name: 'zrender',
-            location: path.resolve(__dirname, '../zrender/src'),
+            location: 'zrender/src',
             main: 'zrender'
         }
     ]
