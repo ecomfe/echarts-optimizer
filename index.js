@@ -90,12 +90,12 @@ exports.packAsDemand = function () {
 
     // write built source
     writeCompiledCode(
-        'echarts.source.js', main.name, main.expectDependencies,
+        'echarts.js', main.name, main.expectDependencies,
         eslCode
     );
     modules.parts.forEach(function (mod) {
         writeCompiledCode(
-            mod.name.slice(mod.name.indexOf('/') + 1) + '.source.js',
+            mod.name.slice(mod.name.indexOf('/') + 1) + '.js',
             mod.name,
             mod.expectDependencies
         );
@@ -122,10 +122,10 @@ exports.packAsAll = function () {
     // write file by wrapped code
     var code = wrapStart + wrapNut + result + wrapEnd;
     writeFile(
-        'echarts-all.source.js', code
+        'source/echarts-all.js', code
     );
     writeFile(
-        'echarts-all.js',
+        'dist/echarts-all.js',
         jsCompress(code)
     );
 };
@@ -157,8 +157,8 @@ function writeCompiledCode(file, moduleId, expectDependencies, beforeContent) {
         }
     });
 
-    writeFile(file, result);
-    writeFile(file.replace('.source', ''), jsCompress(result));
+    writeFile('source/' + file, result);
+    writeFile('dist/' + file, jsCompress(result));
 }
 
 /**

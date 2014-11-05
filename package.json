@@ -1,6 +1,6 @@
 {
     "name": "echarts-optimizer",
-    "version": "0.2.2",
+    "version": "0.2.4",
     "description": "",
     "dependencies": {
         "commander": "~2.3.0",
