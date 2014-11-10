@@ -57,15 +57,21 @@ var require, define;
     }
 
     function createRequire(baseId) {
+        var cacheMods = {};
+
         function localRequire(id, callback) {
             if (typeof id === 'string') {
-                id = normalize(id, baseId);
-                var mod = mods[id];
-                return getModExports(id);
+                var exports = cacheMods[id];
+                if (!exports) {
+                    exports = getModExports(normalize(id, baseId));
+                    cacheMods[id] = exports;
+                }
+
+                return exports;
             }
             else if (id instanceof Array) {
                 callback = callback || function () {};
-                callback.apply(this, getModsExports(id, callback));
+                callback.apply(this, getModsExports(id, callback, baseId));
             }
         };
 
