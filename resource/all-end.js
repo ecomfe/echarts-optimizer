@@ -22,8 +22,19 @@ echarts.util = {
     }
 }
 
-// 加载需要的图表，由build.js临时生成
-var chart = require('_chart');
+require("echarts/chart/gauge");
+require("echarts/chart/funnel");
+require("echarts/chart/scatter");
+require("echarts/chart/k");
+require("echarts/chart/radar");
+require("echarts/chart/chord");
+require("echarts/chart/force");
+require("echarts/chart/line");
+require("echarts/chart/bar");
+require("echarts/chart/pie");
+require("echarts/chart/eventRiver");
+require("echarts/chart/map");
+require("echarts/chart/island");
 
 _global['echarts'] = echarts;
 _global['zrender'] = zrender;
