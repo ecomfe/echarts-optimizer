@@ -8,11 +8,12 @@ var require, define;
             deps: deps,
             factory: factory,
             defined: 0,
-            exports: {}
+            exports: {},
+            require: createRequire(id)
         };
     };
 
-    require = createRequire();
+    require = createRequire('');
 
     function normalize(id, baseId) {
         if (!baseId) {
@@ -56,46 +57,65 @@ var require, define;
     }
 
     function createRequire(baseId) {
-        function localRequire(id) {
-            id = normalize(id, baseId);
-            var mod = mods[id];
-            if (!mod) {
-                throw new Error('No ' + id);
+        function localRequire(id, callback) {
+            if (typeof id === 'string') {
+                id = normalize(id, baseId);
+                var mod = mods[id];
+                return getModExports(id);
             }
-
-            if (!mod.defined) {
-                var factory = mod.factory;
-                var deps = mod.deps;
-                var args = [];
-                for (var i = 0, l = Math.min(deps.length, factory.length); i < l; i++) {
-                    var requireMod = deps[i];
-                    var arg;
-                    switch (requireMod) {
-                        case 'require':
-                            arg = createRequire(id);
-                            break;
-                        case 'exports':
-                            arg = mod.exports;
-                            break;
-                        case 'module':
-                            arg = mod;
-                            break;
-                        default:
-                            arg = require(requireMod)
-                    }
-                    args.push(arg);
-                }
-
-                var factoryReturn = factory.apply(this, args);
-                if (typeof factoryReturn !== 'undefined') {
-                    mod.exports = factoryReturn;
-                }
-                mod.defined = 1;
+            else if (id instanceof Array) {
+                callback = callback || function () {};
+                callback.apply(this, getModsExports(id, callback));
             }
-
-            return mod.exports;
         };
 
         return localRequire;
+    }
+
+    function getModsExports(ids, factory, baseId) {
+        var es = [];
+        var mod = mods[baseId];
+
+        for (var i = 0, l = Math.min(ids.length, factory.length); i < l; i++) {
+            var id = normalize(ids[i], baseId);
+            var arg;
+            switch (id) {
+                case 'require':
+                    arg = (mod && mod.require) || require;
+                    break;
+                case 'exports':
+                    arg = mod.exports;
+                    break;
+                case 'module':
+                    arg = mod;
+                    break;
+                default:
+                    arg = getModExports(id);
+            }
+            es.push(arg);
+        }
+
+        return es;
+    }
+
+    function getModExports(id) {
+        var mod = mods[id];
+        if (!mod) {
+            throw new Error('No ' + id);
+        }
+
+        if (!mod.defined) {
+            var factory = mod.factory;
+            var factoryReturn = factory.apply(
+                this,
+                getModsExports(mod.deps || [], factory, id)
+            );
+            if (typeof factoryReturn !== 'undefined') {
+                mod.exports = factoryReturn;
+            }
+            mod.defined = 1;
+        }
+
+        return mod.exports;
     }
 }());
