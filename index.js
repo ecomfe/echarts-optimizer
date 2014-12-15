@@ -13,13 +13,18 @@ function readResourceFile(fileName) {
 var eslCode = readResourceFile('esl.js');
 var wrapStart = readResourceFile('all-start.js');
 var wrapNut = readResourceFile('all-nut.js');
-var wrapEnd = readResourceFile('all-end.js');
+var wrapEndTpl = readResourceFile('all-end.js');
 
 var HIGH_WEIGHT = 100;
 var BUILTIN_MODULES = ['require', 'module', 'exports'];
 
 var amd = require('./lib/amd');
 var analyse = require('./lib/analyse');
+var etpl = require('./lib/etpl');
+etpl.config({
+    commandOpen: '/**',
+    commandClose: '*/'
+});
 
 exports.setConf = function (customConf) {
     conf = customConf || require('./conf');
@@ -56,7 +61,7 @@ exports.analyse = function (debug) {
     });
 
     // analyse extra dependencies of main module
-    var extraMainDependencies;
+    var extraMainDependencies = [];
     modules.parts.forEach(function (mod) {
         if (mod.weight >= HIGH_WEIGHT) {
             if (!extraMainDependencies) {
@@ -120,6 +125,13 @@ exports.packAsAll = function () {
     });
 
     // write file by wrapped code
+    var hasMap = modules.parts.filter(function (mod) {
+        return mod.name.indexOf('chart/map') >= 0;
+    }).length > 0;
+    var wrapEnd = etpl.compile(wrapEndTpl)({
+        parts: module.parts,
+        hasMap: hasMap
+    });
     var code = wrapStart + wrapNut + result + wrapEnd;
     writeFile(
         'source/echarts-all.js', code

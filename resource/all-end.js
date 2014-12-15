@@ -16,26 +16,16 @@ zrender.animation = {
 }
 var echarts = require('echarts');
 echarts.config = require('echarts/config');
+/** if: ${hasMap} */
 echarts.util = {
     mapData : {
         params : require('echarts/util/mapData/params')
     }
 }
-
-require("echarts/chart/gauge");
-require("echarts/chart/funnel");
-require("echarts/chart/scatter");
-require("echarts/chart/k");
-require("echarts/chart/radar");
-require("echarts/chart/chord");
-require("echarts/chart/force");
-require("echarts/chart/line");
-require("echarts/chart/bar");
-require("echarts/chart/pie");
-require("echarts/chart/eventRiver");
-require("echarts/chart/map");
-require("echarts/chart/island");
-
+/** /if */
+/** for: ${parts} as ${mod} */
+require("${mod.name}");
+/** /for */
 _global['echarts'] = echarts;
 _global['zrender'] = zrender;
 
