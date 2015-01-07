@@ -1,14 +1,16 @@
 ## ECharts 构建工具
 
-### 安装
+### 安装 (install)
 
 ```
 $ [sudo] npm install -g echarts-optimizer
 ```
 
-### 运行
+### 运行 (run)
 
 默认情况下，将自动查找当前目录下的 `echarts/src` 和 `zrender/src` 作为 `echarts` 和 `zrender` 的源代码目录，并将构建结果生成在当前目录下的 `dist` 目录中。
+
+
 
 ```
 $ echarts-optimize
