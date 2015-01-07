@@ -1,16 +1,17 @@
-## ECharts 构建工具
+## ECharts 构建工具(Build tools)
 
-### 安装 (install)
+
+### 安装 (Install)
 
 ```
 $ [sudo] npm install -g echarts-optimizer
 ```
 
-### 运行 (run)
+### 运行 (Run)
 
 默认情况下，将自动查找当前目录下的 `echarts/src` 和 `zrender/src` 作为 `echarts` 和 `zrender` 的源代码目录，并将构建结果生成在当前目录下的 `dist` 目录中。
 
-
+`${pwd}/echarts/src` and `${pwd}/zrender/src` are the default source directories of `echarts` and `zrender`, and the default output directory is `${pwd}/dist`.
 
 ```
 $ echarts-optimize
@@ -18,17 +19,23 @@ $ echarts-optimize
 
 添加 `--debug` 参数时，生成目录下会包含依赖分析结果。
 
+When `--debug` argument is added, it will generate dependency info files in the output directory.
+
 ```
 $ echarts-optimize --debug
 ```
 
 通过如下方式可以指定生成目录：
 
+You can specify the output directory.
+
 ```
 $ echarts-optimize echarts-dist
 ```
 
-如果想要变更 `echarts` 和 `zrender` 的源代码目录，可以在当前目录下创建 `echarts-optimize-conf.js` 文件，指定 `amd` 配置项。配置文件是一个 node 模块，下面是一个配置文件的例子：
+如果想要变更 `echarts` 和 `zrender` 的源代码目录，可以在当前目录下创建 `echarts-optimize-conf.js` 文件，指定 `amd` 配置项。配置文件是一个 NodeJS 模块，下面是一个配置文件的例子：
+
+If you need to change the source code directories of `echarts` and `zrender`, create `${pwd}/echarts-optimize-conf.js` with `amd` property. `echarts-optimize-conf.js` is a NodeJS module.
 
 ```javascript
 exports.modules = {
@@ -95,12 +102,12 @@ exports.amd = {
     packages: [
         {
             name: 'echarts',
-            location: '../echarts/src',
+            location: './echarts/src',
             main: 'echarts'
         },
         {
             name: 'zrender',
-            location: '../zrender/src',
+            location: './zrender/src',
             main: 'zrender'
         }
     ]
