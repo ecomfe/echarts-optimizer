@@ -17,6 +17,8 @@ $ [sudo] npm install -g echarts-optimizer
 $ echarts-optimize
 ```
 
+#### --debug 参数 (--debug argument)
+
 添加 `--debug` 参数时，生成目录下会包含依赖分析结果。
 
 When `--debug` argument is added, it will generate dependency info files in the output directory.
@@ -25,6 +27,8 @@ When `--debug` argument is added, it will generate dependency info files in the 
 $ echarts-optimize --debug
 ```
 
+#### 指定生成目录 (Specify output directory)
+
 通过如下方式可以指定生成目录：
 
 You can specify the output directory.
@@ -32,6 +36,8 @@ You can specify the output directory.
 ```
 $ echarts-optimize echarts-dist
 ```
+
+#### 添加配置文件 (Optimize configuration)
 
 如果想要变更 `echarts` 和 `zrender` 的源代码目录，可以在当前目录下创建 `echarts-optimize-conf.js` 文件，指定 `amd` 配置项。配置文件是一个 NodeJS 模块，下面是一个配置文件的例子：
 
