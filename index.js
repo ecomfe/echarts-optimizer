@@ -129,7 +129,7 @@ exports.packAsAll = function () {
         return mod.name.indexOf('chart/map') >= 0;
     }).length > 0;
     var wrapEnd = etpl.compile(wrapEndTpl)({
-        parts: module.parts,
+        parts: modules.parts,
         hasMap: hasMap
     });
     var code = wrapStart + wrapNut + result + wrapEnd;
