@@ -39,6 +39,10 @@ exports.setDistDir = function (dir) {
     }
 };
 
+exports.getDistDir = function () {
+    return distDir;
+};
+
 function writeFile(file, content) {
     var filePath = path.join(distDir, file);
     require('mkdirp').sync(path.dirname(filePath));

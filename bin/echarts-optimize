@@ -3,8 +3,10 @@
 // parse args
 var program = require('commander');
 program
-    .usage('<dist-directory> [--debug]')
+    .usage('[output-directory] [--debug] [-c configuration-file]')
     .option('--debug', 'Output dependencies analyse result to dist dir.')
+    .option('-c --config <configuration-file>', 'Configuration file path, default ${pwd}/echarts-optimize-conf.js')
+    .option('-o --output <output-directory>', 'Output directory. You can also specify output directory by arg.')
     .parse(process.argv);
 
 var fs = require('fs');
@@ -12,17 +14,22 @@ var index = require('../index');
 
 var confFile = require('path').join(
     process.cwd(),
-    'echarts-optimize-conf.js'
+    program.config || 'echarts-optimize-conf.js'
 );
 
 if (fs.existsSync(confFile)) {
+    console.log('Use custom configuration file: ' + confFile);
     index.setConf(require(confFile));
 }
 else {
     index.setConf();
 }
 
-index.setDistDir(program.args[0]);
+
+index.setDistDir(program.output || program.args[0]);
+console.log('Output to directory: ' + index.getDistDir());
+
 index.analyse(program.debug);
 index.packAsAll();
 index.packAsDemand();
+
