@@ -65,7 +65,7 @@ exports.analyse = function (debug) {
     });
 
     // analyse extra dependencies of main module
-    var extraMainDependencies = [];
+    var extraMainDependencies;
     modules.parts.forEach(function (mod) {
         if (mod.weight >= HIGH_WEIGHT) {
             if (!extraMainDependencies) {
@@ -77,6 +77,8 @@ exports.analyse = function (debug) {
         }
     });
 
+    extraMainDependencies = extraMainDependencies || [];
+    
     // analyse expect dependencies for all modules
     main.expectDependencies = union(main.dependencies, extraMainDependencies);
     debug && writeFile('analyses/echarts.dependencies.expect', main.expectDependencies.join('\n'));
