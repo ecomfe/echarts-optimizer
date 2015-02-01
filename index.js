@@ -54,10 +54,10 @@ exports.analyse = function (debug) {
     var main = modules.main;
 
     // analyse dependencies
-    main.dependencies = subtract(analyse(main.name, 1), BUILTIN_MODULES);
+    main.dependencies = subtract(analyse(main.name, 1, {}, main.exclude), BUILTIN_MODULES);
     debug && writeFile('analyses/echarts.dependencies', main.dependencies.join('\n'));
     modules.parts.forEach(function (mod) {
-        mod.dependencies = subtract(analyse(mod.name, 1), BUILTIN_MODULES);
+        mod.dependencies = subtract(analyse(mod.name, 1, {}, mod.exclude), BUILTIN_MODULES);
         debug && writeFile(
             'analyses/' + mod.name.split('/').join('.') + '.dependencies',
             mod.dependencies.join('\n')
