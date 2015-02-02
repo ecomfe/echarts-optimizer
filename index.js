@@ -99,10 +99,11 @@ exports.analyse = function (debug) {
 exports.packAsDemand = function () {
     var main = modules.main;
 
+    var includeEsl = conf.includeEsl == null ? true : conf.includeEsl;
     // write built source
     writeCompiledCode(
-        'echarts.js', main.name, main.expectDependencies,
-        eslCode
+        (conf.name || 'echarts') + '.js', main.name, main.expectDependencies,
+        includeEsl ? eslCode : ''
     );
     modules.parts.forEach(function (mod) {
         writeCompiledCode(
@@ -139,11 +140,12 @@ exports.packAsAll = function () {
         hasMap: hasMap
     });
     var code = wrapStart + wrapNut + result + wrapEnd;
+    var name = (conf.name || 'echarts') + '-all';
     writeFile(
-        'source/echarts-all.js', code
+        'source/' + name + '.js', code
     );
     writeFile(
-        'dist/echarts-all.js',
+        'dist/' + name + '.js',
         jsCompress(code)
     );
 };

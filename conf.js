@@ -72,3 +72,6 @@ exports.amd = {
         }
     ]
 };
+
+exports.name = 'echarts';
+exports.includeEsl = true;
