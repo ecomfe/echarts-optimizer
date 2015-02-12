@@ -54,10 +54,10 @@ exports.analyse = function (debug) {
     var main = modules.main;
 
     // analyse dependencies
-    main.dependencies = subtract(analyse(main.name, 1), BUILTIN_MODULES);
+    main.dependencies = subtract(analyse(main.name, 1, {}, main.exclude), BUILTIN_MODULES);
     debug && writeFile('analyses/echarts.dependencies', main.dependencies.join('\n'));
     modules.parts.forEach(function (mod) {
-        mod.dependencies = subtract(analyse(mod.name, 1), BUILTIN_MODULES);
+        mod.dependencies = subtract(analyse(mod.name, 1, {}, mod.exclude), BUILTIN_MODULES);
         debug && writeFile(
             'analyses/' + mod.name.split('/').join('.') + '.dependencies',
             mod.dependencies.join('\n')
@@ -99,10 +99,11 @@ exports.analyse = function (debug) {
 exports.packAsDemand = function () {
     var main = modules.main;
 
+    var includeEsl = conf.includeEsl == null ? true : conf.includeEsl;
     // write built source
     writeCompiledCode(
-        'echarts.js', main.name, main.expectDependencies,
-        eslCode
+        (conf.name || 'echarts') + '.js', main.name, main.expectDependencies,
+        includeEsl ? eslCode : ''
     );
     modules.parts.forEach(function (mod) {
         writeCompiledCode(
@@ -139,11 +140,12 @@ exports.packAsAll = function () {
         hasMap: hasMap
     });
     var code = wrapStart + wrapNut + result + wrapEnd;
+    var name = (conf.name || 'echarts') + '-all';
     writeFile(
-        'source/echarts-all.js', code
+        'source/' + name + '.js', code
     );
     writeFile(
-        'dist/echarts-all.js',
+        'dist/' + name + '.js',
         jsCompress(code)
     );
 };
