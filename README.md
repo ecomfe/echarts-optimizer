@@ -119,4 +119,9 @@ exports.amd = {
     ]
 };
 
+exports.env = {
+    mobile: 1,
+    ios: 8
+};
+
 ```
