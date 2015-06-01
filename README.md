@@ -121,7 +121,10 @@ exports.amd = {
 
 exports.env = {
     mobile: 1,
-    svg: 1
+    svg: 1,
+    android: {
+        chrome: 1
+    }
 };
 
 ```
