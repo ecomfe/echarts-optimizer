@@ -30,7 +30,7 @@ exports.setConf = function (customConf) {
     conf = customConf || require('./conf');
     modules = conf.modules;
     amd.config(conf.amd);
-    require('./lib/macro').setMacroConfig(customConf.macro);
+    require('./lib/macro').setMacroEnv(customConf.env);
 };
 
 var distDir = path.join(process.cwd(), 'dist');

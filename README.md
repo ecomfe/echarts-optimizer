@@ -119,12 +119,9 @@ exports.amd = {
     ]
 };
 
-exports.macro = {
-    path: 'echarts/macro',
-    env: {
-        mobile: 1,
-        svg: 1
-    }
+exports.env = {
+    mobile: 1,
+    svg: 1
 };
 
 ```
