@@ -30,6 +30,9 @@ exports.setConf = function (customConf) {
     conf = customConf || require('./conf');
     modules = conf.modules;
     amd.config(conf.amd);
+    // 暂时从echarts-optimizer-conf.js获取环境配置
+    // 可能会有其他来源，比如在命令中指定
+    require('./lib/macro').setMacroEnv(customConf.env);
 };
 
 var distDir = path.join(process.cwd(), 'dist');
